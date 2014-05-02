@@ -57,6 +57,7 @@ main.config(function($interpolateProvider) {
         </div>
         <div class="navbar-collapse collapse" collapse="isCollapsed">
           <ul class="nav navbar-nav">
+            {% if user.is_authenticated %}
             <li class="active"><a href="#">Home</a></li>
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
@@ -64,6 +65,7 @@ main.config(function($interpolateProvider) {
                 <li><a href="#">Action</a></li>
               </ul>
             </li>
+            {% endif %}
           </ul>
           
 		{% block header-user %}

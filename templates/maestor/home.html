@@ -1,0 +1,27 @@
+{% extends "base/base_banner.html" %}
+{% block 'content'%}
+        <h1>Disk MÆstØr</h1>
+    
+	    <div ng-controller="Ctrl">
+		    
+		</div>
+      
+{% endblock %}
+     
+	{% block 'scripts' %}
+       <script>
+    var Ctrl = function ($scope) {
+
+    	  $scope.singleModel = 1;
+
+    	  $scope.radioModel = 'Middle';
+
+    	  $scope.checkModel = {
+    	    left: false,
+    	    middle: true,
+    	    right: false
+    	  };
+    	};
+   	
+   	</script>
+   	{% endblock %}

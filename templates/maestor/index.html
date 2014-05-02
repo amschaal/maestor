@@ -1,0 +1,22 @@
+{% extends "base/base_banner.html" %}
+{% block 'content'%}
+	<h3><a href="{% url 'cas_login' %}">Log in</a></h3>
+{% endblock %}
+     
+	{% block 'scripts' %}
+       <script>
+    var ButtonsCtrl = function ($scope) {
+
+    	  $scope.singleModel = 1;
+
+    	  $scope.radioModel = 'Middle';
+
+    	  $scope.checkModel = {
+    	    left: false,
+    	    middle: true,
+    	    right: false
+    	  };
+    	};
+   	
+   	</script>
+   	{% endblock %}
