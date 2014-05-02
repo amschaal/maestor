@@ -1,0 +1,5 @@
+Django
+argparse==1.2.1
+django-cas==0.9.1
+django-crispy-forms==1.4.0
+wsgiref==0.1.2

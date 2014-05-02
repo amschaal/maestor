@@ -1,0 +1,20 @@
+{% extends "base/base_banner.html" %}
+{% load crispy_forms_tags %}
+{% load i18n %}
+
+{% block 'content' %}
+<form method="post" action=".">
+  <legend>Login</legend>
+  {% csrf_token %} 
+  {{ form|crispy }}
+
+  <button type="submit" class="btn btn-primary">{% trans 'Log in' %}</button>
+  {% if next%}
+  <input type="hidden" name="next" value="{{next}}" />
+  {% else %}
+  <input type="hidden" name="next" value="" />
+  {% endif %}
+  
+</form>
+
+{% endblock %}
