@@ -14,3 +14,7 @@ urlpatterns = patterns('',
     url(r'^cas/login/$', 'cas.views.login', name='cas_login'),
     url(r'^cas/logout/$', 'cas.views.logout', name='cas_logout'),
 )
+urlpatterns += patterns('maestor.api',
+    # Examples:
+    url(r'^api/smart_report/$', 'post_smart_report', name='post_smart_report'),
+)

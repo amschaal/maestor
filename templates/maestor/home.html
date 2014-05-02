@@ -3,7 +3,12 @@
         <h1>Disk MÆstØr</h1>
     
 	    <div ng-controller="Ctrl">
-		    
+		    <form method="post" action="{% url 'post_smart_report'%}">
+		    	{% csrf_token %}
+		    	Server: <input name="server"/><br>
+		    	Body: <textarea name="body"></textarea><br>
+		    	<input type="submit"/>
+		    </form>
 		</div>
       
 {% endblock %}

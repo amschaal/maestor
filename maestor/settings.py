@@ -38,6 +38,7 @@ INSTALLED_APPS = (
     'login',
     'maestor',
     'crispy_forms',
+    'rest_framework',
 )
 
 MIDDLEWARE_CLASSES = (
