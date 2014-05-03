@@ -4,22 +4,24 @@ class Server(models.Model):
     name = models.CharField(max_length=50,primary_key=True)
     ip = models.IPAddressField()
     api_key = models.CharField(max_length=30)
+    def __unicode__(self):
+        return self.name
     
 class Disk(models.Model):
-    pk = models.CharField(max_length=30, primary_key=True)
+    id = models.CharField(max_length=30,primary_key=True)
     server = models.ForeignKey(Server)
-    slot = models.CharField(max_length=100)
-    unix_device = models.CharField(max_length=100)
+    slot = models.CharField(max_length=100,blank=True,null=True)
+    unix_device = models.CharField(max_length=100,blank=True,null=True)
     serial = models.CharField(max_length=15)
     model = models.CharField(max_length=20)
     firmware = models.CharField(max_length=20)
     family = models.CharField(max_length=50,blank=True,null=True)
     rpm = models.IntegerField()
-    capacity = models.CharField(max_length=8,blank=True,null=True)
+    gigabytes = models.IntegerField(blank=True,null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now_add=True)
-    #...more fields coming...#
-    
+    def __unicode__(self):
+        return '%s: %s'%(self.server,self.pk)
 class SmartReport(models.Model):
     disk = models.ForeignKey(Disk)
     server = models.ForeignKey(Server)

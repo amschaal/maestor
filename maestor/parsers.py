@@ -12,8 +12,8 @@ SMART_CTL = {
                 r'Device Model:\s+(?P<model>\w+)',
                 r'Firmware Version:\s+(?P<firmware>\w+)',
                 r'Model Family:\s+(?P<family>.+)',
-                r'User Capacity:\s+(?P<capacity>.+)',
-                r'Rotation Rate:\s+(?P<rpm>.+)',
+                r'User Capacity:\s+(?P<gigabytes>[,\d]+)',
+                r'Rotation Rate:\s+(?P<rpm>\d+).*',
             ]
          },
          'ATTRS':
@@ -42,6 +42,8 @@ class SmartParse(object):
         for index, line in enumerate(lines):
             if re.match(SMART_CTL[self.version]['INFO']['START'],line) is not None:
                 self.parse_info(lines[index+1:])
+                if self.info.has_key('gigabytes'):
+                    self.info['gigabytes'] = int(self.info['gigabytes'].replace(',',''))/(1000000000)
             if re.match(SMART_CTL[self.version]['ATTRS']['START'],line) is not None:
                 self.parse_attrs(lines[index+1:])
     def parse_info(self,lines):
@@ -65,6 +67,8 @@ class SmartParse(object):
                 matches = re.match(regex,line)
                 if matches is not None:
                     attr = matches.groupdict()
+                    if attr['failed'] == '-':
+                        attr['failed']=None
             if attr is not None:
                 self.attrs.append(attr)
     def get_pk(self):
