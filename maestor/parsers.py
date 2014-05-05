@@ -8,9 +8,9 @@ SMART_CTL = {
             'END':'',
             'REGEX':
             [
-                r'Serial Number:\s+(?P<serial>\w+)',
-                r'Device Model:\s+(?P<model>\w+)',
-                r'Firmware Version:\s+(?P<firmware>\w+)',
+                r'Serial Number:\s+(?P<serial>.+)',
+                r'Device Model:\s+(?P<model>.+)',
+                r'Firmware Version:\s+(?P<firmware>.+)',
                 r'Model Family:\s+(?P<family>.+)',
                 r'User Capacity:\s+(?P<gigabytes>[,\d]+)',
                 r'Rotation Rate:\s+(?P<rpm>\d+).*',
@@ -72,5 +72,5 @@ class SmartParse(object):
             if attr is not None:
                 self.attrs.append(attr)
     def get_pk(self):
-        return '%s:%s'%(self.info['model'],self.info['serial'])
+        return '%s:%s'%(self.info['model'].replace(' ','_'),self.info['serial'].replace(' ','_'))
     

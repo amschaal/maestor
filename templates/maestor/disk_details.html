@@ -1,0 +1,25 @@
+{% extends "base/base_banner.html" %}
+{% block 'content'%}
+<h1>Disk Details</h1>
+<table class="table">
+<tr><th>Server</th><td><a href="{% url 'server_disks' disk.server.id %}">{{disk.server.name}}</a></td></tr>
+<tr><th>Serial</th><td>{{disk.serial}}</td></tr>
+<tr><th>Model</th><td>{{disk.model}}</td></tr>
+<tr><th>Family</th><td>{{disk.family}}</td></tr>
+<tr><th>Capacity</th><td>{{disk.gigabytes}}GB</td></tr>
+<tr><th>RPM</th><td>{{disk.rpm}} RPM</td></tr>
+<tr><th>Firmware</th><td>{{disk.firmware}}</td></tr>
+</table>
+<h2>Smart Reports</h2>
+<table class="table">
+<tr><th>Run</th><th></th></tr>
+{% for sr in disk.smart_reports.all %}
+<tr>
+<td><a href="#">{{sr.created}}</a></td>
+<td><a href="{% url 'smart_report_body' sr.id %}">Full Report</a></td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}
+{% block 'scripts' %}
+{% endblock %}

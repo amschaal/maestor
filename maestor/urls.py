@@ -7,6 +7,10 @@ urlpatterns = patterns('',
     # Examples:
     url(r'^$', 'maestor.views.index', name='index'),
     url(r'^home/$', 'maestor.views.home', name='home'),
+    url(r'^servers/$', 'maestor.views.servers', name='servers'),
+    url(r'^servers/(?P<server>\d+)/disks/$', 'maestor.views.server_disks', name='server_disks'),
+    url(r'^disks/(?P<disk>[:\-\w]+)/details/$', 'maestor.views.disk_details', name='disk_details'),
+    url(r'^smart_report/(?P<smart_report>[\d]+)/body/$', 'maestor.views.smart_report_body', name='smart_report_body'),
     # url(r'^blog/', include('blog.urls')),
 
     url(r'^admin/', include(admin.site.urls)),
@@ -17,4 +21,5 @@ urlpatterns = patterns('',
 urlpatterns += patterns('maestor.api',
     # Examples:
     url(r'^api/smart_report/$', 'post_smart_report', name='post_smart_report'),
+    url(r'^api/attributes/list/$', 'list_attributes', name='list_attributes'),
 )

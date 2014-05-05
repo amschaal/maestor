@@ -1,0 +1,20 @@
+{% extends "base/base_banner.html" %}
+{% block 'content'%}
+<h1>Disks on {{server.name}}</h1>
+<table class="table">
+<tr><th>Serial</th><th>Model</th><th>Family</th><th>Capacity</th><th>RPM</th><th>Firmware</th></tr>
+{% for d in server.disks.all %}
+<tr>
+<td><a href="{% url 'disk_details' d.id %}">{{d.serial}}</a></td>
+<td>{{d.model}}</td>
+<td>{{d.family}}</td>
+<td>{{d.gigabytes}}GB</td>
+<td>{{d.rpm}} RPM</td>
+<td>{{d.firmware}}</td>
+</tr>
+{% endfor %}
+</table>
+      
+{% endblock %}
+{% block 'scripts' %}
+{% endblock %}
