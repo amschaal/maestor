@@ -1,0 +1,25 @@
+{% extends "base/base_banner.html" %}
+{% block 'content'%}
+<h2>Model: {{model}}</h2>
+{% if firmware %}
+<h2>Firmware: {{firmware}}</h2>
+{% endif %}
+<table class="table">
+<tr><th>Server</th><th>Device</th><th>Serial</th><th>Model</th><th>Family</th><th>Capacity</th><th>RPM</th><th>Firmware</th></tr>
+{% for d in disks|dictsort:'server'%}
+<tr>
+<td><a href="{% url 'server_disks' d.server.id %}">{{d.server.name}}</a></td>
+<td>{{d.unix_device}}</td>
+<td><a href="{% url 'disk_details' d.id %}">{{d.serial}}</a></td>
+<td>{{d.model}}</td>
+<td>{{d.family}}</td>
+<td>{{d.gigabytes}}GB</td>
+<td>{{d.rpm}} RPM</td>
+<td>{{d.firmware}}</td>
+</tr>
+{% endfor %}
+</table>
+      
+{% endblock %}
+{% block 'scripts' %}
+{% endblock %}

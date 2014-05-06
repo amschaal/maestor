@@ -2,15 +2,16 @@
 {% block 'content'%}
 <h1>Disks on {{server.name}}</h1>
 <table class="table">
-<tr><th>Serial</th><th>Model</th><th>Family</th><th>Capacity</th><th>RPM</th><th>Firmware</th></tr>
-{% for d in server.disks.all %}
+<tr><th>Device</th><th>Serial</th><th>Model</th><th>Family</th><th>Capacity</th><th>RPM</th><th>Firmware</th></tr>
+{% for d in server.disks.all|dictsort:'unix_device'%}
 <tr>
+<td>{{d.unix_device}}</td>
 <td><a href="{% url 'disk_details' d.id %}">{{d.serial}}</a></td>
-<td>{{d.model}}</td>
+<td><a href="{% url 'model_disks' %}?model={{d.model}}">{{d.model}}</a></td>
 <td>{{d.family}}</td>
 <td>{{d.gigabytes}}GB</td>
 <td>{{d.rpm}} RPM</td>
-<td>{{d.firmware}}</td>
+<td><a href="{% url 'model_disks' %}?model={{d.model}}&firmware={{d.firmware}}">{{d.firmware}}</a></td>
 </tr>
 {% endfor %}
 </table>

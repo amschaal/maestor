@@ -1,15 +1,21 @@
 {% extends "base/base_banner.html" %}
 {% block 'content'%}
-<h1>Disk Details</h1>
+<h2>Disk Details</h2>
 <table class="table">
 <tr><th>Server</th><td><a href="{% url 'server_disks' disk.server.id %}">{{disk.server.name}}</a></td></tr>
+<tr><th>Device</th><td>{{disk.unix_device}}</td></tr>
 <tr><th>Serial</th><td>{{disk.serial}}</td></tr>
-<tr><th>Model</th><td>{{disk.model}}</td></tr>
+<tr><th>Model</th><td><a href="{% url 'model_disks' %}?model={{disk.model}}">{{disk.model}}</a></td></tr>
 <tr><th>Family</th><td>{{disk.family}}</td></tr>
 <tr><th>Capacity</th><td>{{disk.gigabytes}}GB</td></tr>
 <tr><th>RPM</th><td>{{disk.rpm}} RPM</td></tr>
-<tr><th>Firmware</th><td>{{disk.firmware}}</td></tr>
+<tr><th>Firmware</th><td><a href="{% url 'model_disks' %}?model={{disk.model}}&firmware={{disk.firmware}}">{{disk.firmware}}</td></tr>
 </table>
+<h2>Charts</h2>
+<div ng-controller="ChartsCtrl" ng-init="init('{{disk.id}}')">
+<select ng-model="attribute" ng-options="attr as attr for attr in attributes"></select><button ng-click="chart()" class="btn">Chart</button>
+<div id="chart" style="height: 500px; min-width: 500px; display:none"></div>
+</div>
 <h2>Smart Reports</h2>
 <table class="table">
 <tr><th>Run</th><th></th></tr>
@@ -22,4 +28,48 @@
 </table>
 {% endblock %}
 {% block 'scripts' %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="http://code.highcharts.com/stock/highstock.js"></script>
+<script>
+function ChartsCtrl($scope,$http){
+	$scope.init = function(disk_id){
+		$scope.disk_id = disk_id;
+		$http({method:'GET',params:{disk:disk_id},url:'/api/attributes/list/'}).then(function(result) {
+    		$scope.attributes = result.data;
+		});
+	}
+	$scope.chart = function(){
+		$http({url: '/api/disk/attribute/',
+	    		method: 'GET',
+	    		params: {'attribute':$scope.attribute,'disk':$scope.disk_id}}).then(function(result) {
+    		
+    		foo = result.data;
+    		var data = [];
+    		for (var i in foo){
+    			data.push(
+    					[(new Date(foo[i].smart_report__created)).getTime(),parseInt(foo[i].raw_value)]
+    					)
+    		}
+    		console.log(data);
+    		$('#chart').css('display','block').highcharts('Chart', {
+    			
+    			title : {
+    				text : $scope.attribute
+    			},
+                xAxis: {
+                    ordinal :false
+                },
+    			series : [{
+    				name : $scope.attribute,
+    				data : data,
+    				tooltip: {
+    					valueDecimals: 2
+    				}
+    			}]
+    		});
+		});
+	}
+	
+}
+</script>
 {% endblock %}

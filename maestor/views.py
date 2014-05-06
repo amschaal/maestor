@@ -21,6 +21,16 @@ def server_disks(request,server):
     context['server'] = server
     return render(request, 'maestor/server_disks.html', context)
 
+def model_disks(request):
+    model = request.GET.get('model',None)
+    firmware = request.GET.get('firmware',None)
+    query = {'model':model} 
+    if firmware is not None:
+        query['firmware']=firmware 
+    disks = Disk.objects.filter(**query)
+    context = {'disks':disks,'model':model,'firmware':firmware}
+    return render(request, 'maestor/model_disks.html', context)
+
 def disk_details(request,disk):
     disk = Disk.objects.get(pk=disk)
     context = {}

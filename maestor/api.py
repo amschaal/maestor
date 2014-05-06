@@ -11,6 +11,7 @@ from datetime import datetime
 def post_smart_report(request):
     server = request.DATA.get('server')
     body = request.DATA.get('body')
+    unix_device = request.DATA.get('unix_device')
     
     server = Server.objects.get(name=server)
     parser = SmartParse(body,'6.2')
@@ -22,28 +23,10 @@ def post_smart_report(request):
         try:
             disk = Disk.objects.get(pk=parser.get_pk())
         except ObjectDoesNotExist, e:
-            disk = Disk(pk=parser.get_pk(),server=server,**parser.info)
+            disk = Disk(pk=parser.get_pk(),server=server,unix_device=unix_device,**parser.info)
             disk.save()
         SM = SmartReport(disk=disk,server=server,firmware=parser.info['firmware'],text=body,parsed=datetime.now(),ip=request.META['REMOTE_ADDR'])
         SM.save()
-        '''
-    smart_report = models.ForeignKey(SmartReport)
-    name = models.CharField(max_length=30)
-    value = models.IntegerField()
-    worst = models.IntegerField()
-    thresh = models.IntegerField()
-    failed = models.DateTimeField(null=True,blank=True)
-    raw_value = models.CharField(max_length=25)
-        "raw_value": "3707945", 
-            "updated": "Always", 
-            "name": "Raw_Read_Error_Rate", 
-            "value": "102", 
-            "failed": "-", 
-            "thresh": "006", 
-            "worst": "099", 
-            "type": "Pre-fail", 
-            "id": "1"
-        '''
         for attr in parser.attrs:
             a = Attribute(smart_report=SM,name=attr['name'],value=attr['value'],worst=attr['worst'],thresh=attr['thresh'],failed=attr['failed'],raw_value=attr['raw_value'])
             a.save()
@@ -57,5 +40,20 @@ def post_smart_report(request):
 @api_view(['GET'])
 @permission_classes((ServerAuth, ))  
 def list_attributes(request):
-    return Response(Attribute.objects.values_list('name').distinct())
+    disk = request.GET.get('disk',None)
+    if disk is None:
+        attrs = Attribute.objects.values_list('name', flat=True).distinct()
+    else:
+        attrs = Attribute.objects.filter(smart_report__disk=disk).values_list('name', flat=True).distinct()
+    return Response(attrs)
+
+@api_view(['GET'])
+@permission_classes((ServerAuth, ))  
+def disk_attribute(request):
+    disk = request.GET.get('disk')
+    attr = request.GET.get('attribute')
+    print "%s: %s" % (attr,disk)
+    attrs = Attribute.objects.filter(name=attr,smart_report__disk=disk).values('raw_value','smart_report__created')
+#     attrs = Attribute.objects.filter(name=attr).values('raw_value')
+    return Response(attrs)
     

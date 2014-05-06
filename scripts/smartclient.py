@@ -31,10 +31,10 @@ def run_smartctl(disk):
     out, err = process.communicate()
     errcode = process.returncode
 #     if errcode == 64:
-    post_result(out)
+    post_result(disk,out)
 
-def post_result(body):
-    values = {'server' : SERVER, 'body' : body }
+def post_result(disk, body):
+    values = {'server' : SERVER,'unix_device':disk, 'body' : body }
     data = urllib.urlencode(values)
     req = urllib2.Request(URL, data)
     response = urllib2.urlopen(req)
