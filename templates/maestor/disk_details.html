@@ -13,10 +13,13 @@
 </table>
 <h2>Charts</h2>
 <div ng-controller="ChartsCtrl" ng-init="init('{{disk.id}}')">
-<select ng-model="attribute" ng-options="attr as attr for attr in attributes"></select><button ng-click="chart()" class="btn">Chart</button>
-<div id="chart" style="height: 500px; min-width: 500px; display:none"></div>
+<select ng-model="attribute" ng-options="a.name group by a.type for a in attributes"></select><button ng-click="chart()" class="btn">Chart</button>
+<!--<div id="chart" style="height: 500px; min-width: 500px; display:none"></div>-->
+<div>
+<div ng-repeat="attr in attrs" class="chart-container"><button class="chart-control" ng-click="remove(attr)">remove</button><div id="{[attr.clean_name]}_chart" style="height: 300px; width: 500px; float: left;padding:0px;margin:0px;  display:inline-block;">{[attr.name]}</div></div>
 </div>
-<h2>Smart Reports</h2>
+</div>
+<h2 style="clear:both;">Smart Reports</h2>
 <table class="table">
 <tr><th>Run</th><th></th></tr>
 {% for sr in disk.smart_reports.all %}
@@ -30,37 +33,58 @@
 {% block 'scripts' %}
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script src="http://code.highcharts.com/stock/highstock.js"></script>
+<script src="http://code.highcharts.com/stock/highcharts-more.js"></script>
 <script>
 function ChartsCtrl($scope,$http){
 	$scope.init = function(disk_id){
 		$scope.disk_id = disk_id;
+		$scope.attrs = [];
 		$http({method:'GET',params:{disk:disk_id},url:'/api/attributes/list/'}).then(function(result) {
     		$scope.attributes = result.data;
+    		//console.log(result.data);
 		});
+		$scope.chart({'type':'smartctl','name':'Power_On_Hours'});
+		$scope.chart({'type':'smartctl','name':'Current_Pending_Sector'});
+		$scope.chart({'type':'smartctl','name':'Offline_Uncorrectable'});
 	}
-	$scope.chart = function(){
-		$http({url: '/api/disk/attribute/',
+	$scope.remove = function(attribute){
+		$scope.attrs.splice($scope.attrs.indexOf(attribute),1);
+	}
+	$scope.chart = function(attribute){
+		if (!attribute)
+			attribute = $scope.attribute;
+		attribute.clean_name = attribute.name.replace(/[^a-z0-9\s]/gi, '').replace(/[_\s]/g, '-');
+		$scope.attrs.push(attribute);
+		$http({url: '/api/disk/values/',
 	    		method: 'GET',
-	    		params: {'attribute':$scope.attribute,'disk':$scope.disk_id}}).then(function(result) {
-    		
-    		foo = result.data;
+	    		params: {'attribute':attribute.name,'type':attribute.type,'disk':$scope.disk_id}}).then(function(result) {
+    		foo = result.data.values;
     		var data = [];
+    		var datetime = result.data.fields.indexOf('datetime');
+    		var value = result.data.fields.indexOf('value');
     		for (var i in foo){
     			data.push(
-    					[(new Date(foo[i].smart_report__created)).getTime(),parseInt(foo[i].raw_value)]
+    					[(new Date(foo[i][datetime])).getTime(),parseFloat(foo[i][value])]
     					)
     		}
     		console.log(data);
-    		$('#chart').css('display','block').highcharts('Chart', {
-    			
+    		$('#'+attribute.clean_name+'_chart').css('display','block').highcharts('Chart', {
+    			chart: {
+                    zoomType: 'x'
+                },
     			title : {
-    				text : $scope.attribute
+    				text : attribute.name
     			},
                 xAxis: {
+                	events : {
+    					afterSetExtremes : function(e){$scope.afterSetExtremes(e,attribute)}
+    				},
+    				minRange: 3600 * 1000, // one hour
+                	type: 'datetime',
                     ordinal :false
                 },
     			series : [{
-    				name : $scope.attribute,
+    				name : attribute.name,
     				data : data,
     				tooltip: {
     					valueDecimals: 2
@@ -69,6 +93,52 @@ function ChartsCtrl($scope,$http){
     		});
 		});
 	}
+	/**
+	 * Load new data depending on the selected min and max
+	 */
+	 $scope.afterSetExtremes = function(e,attribute) {
+		
+		//var currentExtremes = this.getExtremes();
+		var range = e.max - e.min;
+ 		var chart = $('#'+attribute.clean_name+'_chart').highcharts();
+ 		chart.showLoading('Loading data from server...');
+		console.log('event',e,attribute);
+		$http({url: '/api/disk/values/',
+    		method: 'GET',
+    		params: {'attribute':attribute.name,'type':attribute.type,'disk':$scope.disk_id,'start':Math.round(e.min),'end':Math.round(e.max)}})
+    		.then(function(result) {
+				console.log(result);
+				foo = result.data.values;
+	    		var data = [];
+	    		var datetime = result.data.fields.indexOf('datetime');
+	    		var value = result.data.fields.indexOf('value');
+	    		for (var i in foo){
+	    			data.push(
+	    					[(new Date(foo[i][datetime])).getTime(),foo[i][value]]
+	    					)
+	    		}
+	    		chart.series[0].setData(data);
+				chart.hideLoading();
+		        //chart.series[0].update({type:'areasplinerange'});
+			});
+		return;
+		foo = result.data;
+		var data = [];
+		var currentExtremes = this.getExtremes(),
+			range = e.max - e.min,
+			chart = $('#container').highcharts();
+			
+		chart.showLoading('Loading data from server...');
+		$.getJSON('http://www.highcharts.com/samples/data/from-sql.php?start='+ Math.round(e.min) +
+				'&end='+ Math.round(e.max) +'&callback=?', function(data) {
+			
+			chart.series[0].setData(data);
+			chart.hideLoading();
+	                chart.series[0].update({type:'line'});
+		});
+		
+	}
+	
 	
 }
 </script>

@@ -1,8 +1,10 @@
+#!/usr/bin/env python
+
 import urllib
 import urllib2
 import subprocess
 
-URL = 'http://bowie.genomecenter.ucdavis.edu:8001/api/smart_report/'
+URL = 'http://bowie.genomecenter.ucdavis.edu:8000/api/smart_report/'
 SERVER = 'bowie.genomecenter.ucdavis.edu'
 # SERVER = 'athena.genomecenter.ucdavis.edu'
 
