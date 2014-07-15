@@ -116,7 +116,7 @@ def disk_attribute(request):
 @api_view(['GET'])
 @permission_classes((ServerAuth, ))  
 @renderer_classes((JSONRenderer, JSONPRenderer))
-def disk_values(request):
+def disk_values_old(request):
     disk = request.GET.get('disk')
     attr = request.GET.get('attribute')
     type = request.GET.get('type')
@@ -160,3 +160,80 @@ def disk_values(request):
         values = Aggregate.objects.filter(type=type,time_unit=unit,disk=disk,name=attr,start__gte=start_dt,start__lte=end_dt).values_list('start','min','max','stddev','average','count').order_by('start')
 #     attrs = Attribute.objects.filter(name=attr).values('raw_value')
     return Response({'fields':fields,'values':values})
+
+
+
+@api_view(['GET'])
+@permission_classes((ServerAuth, ))  
+@renderer_classes((JSONRenderer, JSONPRenderer))
+def disk_values(request):
+    from utils import fetchall
+    disk = request.GET.get('disk')
+    attr = request.GET.get('attribute')
+    type = request.GET.get('type')
+    start = request.GET.get('start',0)
+    end = request.GET.get('end',0)
+    
+    if start == 0 or end == 0:
+        if type == 'smartctl':
+            start = time.mktime(Attribute.objects.filter(name=attr,smart_report__disk=disk).values_list('smart_report__created').order_by('smart_report__created')[0][0].timetuple()) *1000
+            end = time.mktime(Attribute.objects.filter(name=attr,smart_report__disk=disk).values_list('smart_report__created').order_by('-smart_report__created')[0][0].timetuple()) *1000
+        if type == 'iostat':
+            start = time.mktime(IOStat.objects.filter(name=attr,disk=disk).values_list('created').order_by('created')[0][0].timetuple()) *1000
+            end = time.mktime(IOStat.objects.filter(name=attr,disk=disk).values_list('created').order_by('-created')[0][0].timetuple()) *1000
+#         start = time.mktime(Aggregate.objects.filter(type=type,disk=disk,name=attr).values_list('start').order_by('start')[0][0].timetuple()) *1000
+#         end = time.mktime(Aggregate.objects.filter(type=type,disk=disk,name=attr).values_list('start').order_by('-start')[0][0].timetuple()) *1000
+    range = int(end)-int(start)
+    if range < 6 * 3600 * 1000:
+        unit = 'default'
+    elif range < 14 * 24 * 3600 * 1000:
+        unit = 'hour'
+    elif range < 3 * 31 * 24 * 3600 * 1000:
+        unit = 'day'
+    else:
+        unit = 'week'
+
+    start_dt = datetime.fromtimestamp(int(start)/1000.0)
+    end_dt = datetime.fromtimestamp(int(end)/1000.0)
+    
+    if unit == 'default':   
+        if type == 'smartctl':
+            fields = ['datetime','value']
+            values = Attribute.objects.filter(name=attr,smart_report__disk=disk,smart_report__created__gte=start_dt,smart_report__created__lte=end_dt).values_list('smart_report__created','raw_value').order_by('smart_report__created')
+        elif type == 'iostat':
+            fields = ['datetime','value']
+            values = IOStat.objects.filter(name=attr,disk=disk,created__gte=start_dt,created__lte=end_dt).values_list('created','value').order_by('created')
+    else:
+        if unit == 'week':
+            bucket = 'DATE_SUB(created, INTERVAL DAYOFWEEK(created) - 1 DAY)'
+        elif unit == 'day':
+            bucket = 'TIMESTAMP(DATE(created))'
+        elif unit == 'hour':
+            bucket = 'DATE_SUB(created, INTERVAL MINUTE(created)*60+SECOND(created) SECOND)'
+        fields = ['datetime','value']
+        if type == 'smartctl':
+            query =  "Select "+ bucket +" as bucket, avg(value) as AVERAGE from maestor_smartreport sr join maestor_attribute sa on sa.smart_report_id - sr.id where sa.name = '%s' and sr.disk_id = '%s' and sr.created >= '%s' and sr.created <= '%s' group by bucket;"%(attr,disk,start_dt,end_dt)
+        elif type == 'iostat':
+            query =  "Select "+ bucket +" as bucket, avg(value) as AVERAGE from maestor_iostat where name = '%s' and disk_id = '%s' and created >= '%s' and created <= '%s' group by bucket;"%(attr,disk,start_dt,end_dt)
+        print query
+        values = fetchall(query)
+#         values = fetchall("Select DATE(DATE_SUB(created, INTERVAL DAYOFWEEK(created) - 1 DAY)) as bucket, count(*) as COUNT from maestor_smartreport sr join maestor_attribute sa on sa.smart_report_id - sr.id where sa.name = '%s' and sr.disk_id = '%s' and sr.created >= '%s' and sr.created <= '%s' group by bucket;",[attr,disk,start_dt,end_dt]);
+#         print "Select DATE(DATE_SUB(created, INTERVAL DAYOFWEEK(created) - 1 DAY)) as bucket, count(*) as COUNT from maestor_smartreport sr join maestor_attribute sa on sa.smart_report_id - sr.id where sa.name = '%s' and sr.disk_id = '%s' and sr.created >= '%s' and sr.created <= '%s' group by bucket;"%[attr,disk,start_dt,end_dt]
+#         values = Aggregate.objects.filter(type=type,time_unit=unit,disk=disk,name=attr,start__gte=start_dt,start__lte=end_dt).values_list('start','average').order_by('start')
+#     attrs = Attribute.objects.filter(name=attr).values('raw_value')
+    return Response({'fields':fields,'values':values})
+
+
+
+@api_view(['GET'])
+# @permission_classes((ServerAuth, ))  
+@renderer_classes((JSONRenderer, JSONPRenderer))
+def stat_count(request):
+    from utils import fetchall
+    disk = request.GET.get('disk', None)
+#     attr = request.GET.get('attribute')
+#     type = request.GET.get('type')
+    start = request.GET.get('start',0)
+    end = request.GET.get('end',0)
+    vals = fetchall('Select DATE(DATE_SUB(created, INTERVAL DAYOFWEEK(created) - 1 DAY)) as bucket, count(*) as COUNT from maestor_smartreport group by bucket;');
+    return Response(vals)

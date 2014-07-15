@@ -31,6 +31,7 @@ def aggregate_disk(disk,beginning,unit="week"):
     Aggregate.objects.filter(start__gte=start,time_unit=unit,disk=disk).delete()
     while start < end:
         until = get_next(start)
+        
         for name in IOStat.objects.values_list('name', flat=True).distinct():
 #             print name
             try:
@@ -41,30 +42,30 @@ def aggregate_disk(disk,beginning,unit="week"):
 #                 print e
 #                 print "Couldn't aggregate for %s: %s" % (name,start)
                 pass
-#         for name in Attribute.objects.values_list('name', flat=True).distinct():
-# #             print name
-#             try:
-#                 aggr = Attribute.objects.filter(smart_report__created__gte=start,smart_report__created__lte=until,name=name,smart_report__disk=disk).values('name').annotate(max=Max('value'),min=Min('value'),average=Avg('value'),count=Count('value'),stddev=StdDev('value'))[0]
-# #                 print aggr
-#                 Aggregate.objects.create(time_unit=unit,type='iostat',start=start,disk=disk,name=name,max=round(aggr['max'],2),min=round(aggr['min'],2),average=round(aggr['average'],2),stddev=round(aggr['stddev'],2),count=aggr['count'])
-#             except Exception, e:
-# #                 print e
-# #                 print "Couldn't aggregate for %s: %s" % (name,start)
-#                 pass
+        for name in Attribute.objects.values_list('name', flat=True).distinct():
+#             print name
+            try:
+                aggr = Attribute.objects.filter(smart_report__created__gte=start,smart_report__created__lte=until,name=name,smart_report__disk=disk).values('name').annotate(max=Max('raw_value'),min=Min('raw_value'),average=Avg('raw_value'),count=Count('raw_value'),stddev=StdDev('raw_value'))[0]
+#                 print aggr
+                Aggregate.objects.create(time_unit=unit,type='iostat',start=start,disk=disk,name=name,max=round(aggr['max'],2),min=round(aggr['min'],2),average=round(aggr['average'],2),stddev=round(aggr['stddev'],2),count=aggr['count'])
+            except Exception, e:
+#                 print e
+#                 print "Couldn't aggregate for %s: %s" % (name,start)
+                pass
             
         start = until
         
-from maestor.models import *
-from maestor.dateutils import *    
-# d = Disk.objects.get(id='ST3500418AS:9VMQ5KXN')
-# aggregate_disk(d,dt.now())
- 
-for d in Disk.objects.filter(server__name__contains='bowie'):
-    print d
-    timestamp = dt.now()-timedelta(days=2)
-    aggregate_disk(d,timestamp,unit='hour')
-    aggregate_disk(d,timestamp,unit='day')
-    aggregate_disk(d,timestamp,unit='week')
+# from maestor.models import *
+# from maestor.dateutils import *    
+# # d = Disk.objects.get(id='ST3500418AS:9VMQ5KXN')
+# # aggregate_disk(d,dt.now())
+#  
+# for d in Disk.objects.filter(server__name__contains='bowie'):
+#     print d
+#     timestamp = dt.now()-timedelta(days=2)
+#     aggregate_disk(d,timestamp,unit='hour')
+#     aggregate_disk(d,timestamp,unit='day')
+#     aggregate_disk(d,timestamp,unit='week')
 
 
 # class Aggregate(models.Model):

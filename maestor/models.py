@@ -1,4 +1,5 @@
 from django.db import models
+import re
 
 class Server(models.Model):
     name = models.CharField(max_length=50)
@@ -93,9 +94,15 @@ class Attribute(models.Model):
     worst = models.IntegerField()
     thresh = models.IntegerField()
     failed = models.DateTimeField(null=True,blank=True)
-    raw_value = models.CharField(max_length=25)
+    raw_value = models.IntegerField()
+#     def parse_raw_value(self):
+#         try:
+#             return float(re.search(r'(\d+\.?\d*)',self.raw_value).group(1))
+#         except:
+#             return None
     def __unicode__(self):
         return '%s: %s'%(self.smart_report.disk, self.name)
+    
     
 class Aggregate(models.Model):
     UNIT_CHOICES = (('hour','hour'),('day','day'),('week','week'),)
