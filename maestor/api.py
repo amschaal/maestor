@@ -98,6 +98,7 @@ def list_attributes(request):
     iostats = [{'type': 'iostat', 'name': a} for a in IOStat.objects.values_list('name', flat=True).distinct()]
     return Response(iostats+attrs)
 
+#@deprecated: Replaced by "disk_values" view
 @api_view(['GET'])
 @permission_classes((ServerAuth, ))  
 def disk_attribute(request):
@@ -112,7 +113,7 @@ def disk_attribute(request):
 #     attrs = Attribute.objects.filter(name=attr).values('raw_value')
     return Response(attrs)
     
-
+#@deprecated: Moving away from use of aggregate table in favor of MySQL aggregation
 @api_view(['GET'])
 @permission_classes((ServerAuth, ))  
 @renderer_classes((JSONRenderer, JSONPRenderer))
@@ -211,12 +212,12 @@ def disk_values(request):
         elif unit == 'hour':
             bucket = 'DATE_SUB(created, INTERVAL MINUTE(created)*60+SECOND(created) SECOND)'
         fields = ['datetime','value']
+        params = (attr,disk,start_dt,end_dt)
         if type == 'smartctl':
-            query =  "Select "+ bucket +" as bucket, avg(value) as AVERAGE from maestor_smartreport sr join maestor_attribute sa on sa.smart_report_id - sr.id where sa.name = '%s' and sr.disk_id = '%s' and sr.created >= '%s' and sr.created <= '%s' group by bucket;"%(attr,disk,start_dt,end_dt)
+            query =  "Select "+ bucket +" as bucket, avg(value) as AVERAGE from maestor_smartreport sr join maestor_attribute sa on sa.smart_report_id = sr.id where sa.name = %s and sr.disk_id = %s and sr.created >= %s and sr.created <= %s group by bucket;"
         elif type == 'iostat':
-            query =  "Select "+ bucket +" as bucket, avg(value) as AVERAGE from maestor_iostat where name = '%s' and disk_id = '%s' and created >= '%s' and created <= '%s' group by bucket;"%(attr,disk,start_dt,end_dt)
-        print query
-        values = fetchall(query)
+            query =  "Select "+ bucket +" as bucket, avg(value) as AVERAGE from maestor_iostat where name = %s and disk_id = %s and created >= %s and created <= %s group by bucket;"
+        values = fetchall(query,params)
 #         values = fetchall("Select DATE(DATE_SUB(created, INTERVAL DAYOFWEEK(created) - 1 DAY)) as bucket, count(*) as COUNT from maestor_smartreport sr join maestor_attribute sa on sa.smart_report_id - sr.id where sa.name = '%s' and sr.disk_id = '%s' and sr.created >= '%s' and sr.created <= '%s' group by bucket;",[attr,disk,start_dt,end_dt]);
 #         print "Select DATE(DATE_SUB(created, INTERVAL DAYOFWEEK(created) - 1 DAY)) as bucket, count(*) as COUNT from maestor_smartreport sr join maestor_attribute sa on sa.smart_report_id - sr.id where sa.name = '%s' and sr.disk_id = '%s' and sr.created >= '%s' and sr.created <= '%s' group by bucket;"%[attr,disk,start_dt,end_dt]
 #         values = Aggregate.objects.filter(type=type,time_unit=unit,disk=disk,name=attr,start__gte=start_dt,start__lte=end_dt).values_list('start','average').order_by('start')

@@ -24,7 +24,7 @@ urlpatterns += patterns('maestor.api',
     url(r'^api/smart_report/$', 'post_smart_report', name='post_smart_report'),
     url(r'^api/io_report/$', 'post_io_report', name='post_io_report'),
     url(r'^api/attributes/list/$', 'list_attributes', name='list_attributes'),
-    url(r'^api/disk/attribute/$', 'disk_attribute', name='disk_attribute'),
+#     url(r'^api/disk/attribute/$', 'disk_attribute', name='disk_attribute'),
     url(r'^api/disk/values/$', 'disk_values', name='disk_values'),
     url(r'^api/io_report/count/$', 'stat_count', name='stat_count'),
 )

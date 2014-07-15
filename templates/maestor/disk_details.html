@@ -35,6 +35,7 @@
 <script src="http://code.highcharts.com/stock/highstock.js"></script>
 <script src="http://code.highcharts.com/stock/highcharts-more.js"></script>
 <script>
+//@todo: Clean up and move into seperate JS file
 function ChartsCtrl($scope,$http){
 	$scope.init = function(disk_id){
 		$scope.disk_id = disk_id;
@@ -118,29 +119,13 @@ function ChartsCtrl($scope,$http){
 	    		var value = result.data.fields.indexOf('value');
 	    		for (var i in foo){
 	    			data.push(
-	    					[(new Date(foo[i][datetime])).getTime(),foo[i][value]]
+	    					[(new Date(foo[i][datetime])).getTime(),parseFloat(foo[i][value])]
 	    					)
 	    		}
 	    		chart.series[0].setData(data);
 				chart.hideLoading();
 		        //chart.series[0].update({type:'areasplinerange'});
 			});
-		return;
-		foo = result.data;
-		var data = [];
-		var currentExtremes = this.getExtremes(),
-			range = e.max - e.min,
-			chart = $('#container').highcharts();
-			
-		chart.showLoading('Loading data from server...');
-		$.getJSON('http://www.highcharts.com/samples/data/from-sql.php?start='+ Math.round(e.min) +
-				'&end='+ Math.round(e.max) +'&callback=?', function(data) {
-			
-			chart.series[0].setData(data);
-			chart.hideLoading();
-	                chart.series[0].update({type:'line'});
-		});
-		
 	}
 	
 	
