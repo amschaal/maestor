@@ -58,7 +58,7 @@ main.config(function($interpolateProvider) {
         <div class="navbar-collapse collapse" collapse="isCollapsed">
           <ul class="nav navbar-nav">
             {% if user.is_authenticated %}
-            <li><a href="#">Home</a></li>
+            <li><a href="{% url 'home' %}">Home</a></li>
             <li><a href="{% url 'servers' %}">Servers</a></li>
             <li><a href="{% url 'admin:index' %}">Admin</a></li>
             <li class="dropdown">

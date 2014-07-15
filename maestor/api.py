@@ -95,7 +95,7 @@ def list_attributes(request):
     else:
         attrs = Attribute.objects.filter(smart_report__disk=disk).values_list('name', flat=True).distinct()
     attrs = [{'type': 'smartctl', 'name': a} for a in attrs]
-    iostats = [{'type': 'iostat', 'name': a} for a in IOStat.objects.values_list('name', flat=True).distinct()]
+    iostats = [{'type': 'iostat', 'name': a} for a in IOStat.objects.filter(disk=disk).values_list('name', flat=True).distinct()]
     return Response(iostats+attrs)
 
 #@deprecated: Replaced by "disk_values" view
