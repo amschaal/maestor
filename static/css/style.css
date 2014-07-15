@@ -3,3 +3,10 @@ text-align: center;
 }
 #banner .brand{
 }
+
+/* Disk details page */
+
+div.chart-container {
+display: inline-block;
+overflow: overlay;
+}
