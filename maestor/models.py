@@ -1,4 +1,7 @@
 from django.db import models
+from django.dispatch import receiver
+from django.db.models.signals import post_save, post_delete, pre_save
+
 import re
 
 class Server(models.Model):
@@ -69,6 +72,14 @@ class IOStat(models.Model):
     value = models.FloatField()#models.CharField(max_length=25)
     def __unicode__(self):
         return '%s: %s'%(self.disk, self.name)
+@receiver(post_save, sender=IOStat)
+def IOStat_post_save(sender, instance, **kwargs):
+    from maestor.flags import generate_disk_flag
+    try:
+        flag = Flag.objects.get(iostat_attr=instance.name)
+        generate_disk_flag(instance.disk,flag,instance.value,instance.created)
+    except:
+        pass
 
 
 class SmartReport(models.Model):
@@ -118,4 +129,47 @@ class Aggregate(models.Model):
     stddev = models.FloatField()
     count = models.IntegerField()
     
+class WarningCriteria(models.Model):
+    WARNING_LEVEL_CHOICES = (('minor','Minor'),('moderate','Moderate'),('severe','Severe'),)
+    BAD_VALUE_CHOICES = (('high','High values are bad'),('low','Low values are bad'),)
+    level = models.CharField(max_length=10,choices=WARNING_LEVEL_CHOICES)
+    iostat_attr = models.CharField(max_length=30,blank=True,null=True)
+    smartreport_attr = models.CharField(max_length=30,blank=True,null=True)
+    minimum = models.DecimalField(max_digits=16,decimal_places=3,blank=True,null=True)
+    maximum = models.DecimalField(max_digits=16,decimal_places=3,blank=True,null=True)
+    bad_value = models.CharField(max_length=10,choices=BAD_VALUE_CHOICES)
+    def __unicode__(self):
+        if self.iostat_attr:
+            return '%s: IOStat %s (%s-%s)'%(self.level.capitalize(), self.iostat_attr,self.minimum,self.maximum)
+        elif self.smartreport_attr:
+            return '%s: SmartReport %s (%s-%s)'%(self.level.capitalize(), self.smartreport_attr,self.minimum,self.maximum)
+
+class Flag(models.Model):
+    BAD_VALUE_CHOICES = (('high','High values are bad'),('low','Low values are bad'),)
+    iostat_attr = models.CharField(max_length=30,blank=True,null=True)
+    smartreport_attr = models.CharField(max_length=30,blank=True,null=True)
+    bad_value = models.CharField(max_length=10,choices=BAD_VALUE_CHOICES)
     
+    def __unicode__(self):
+        if self.iostat_attr:
+            return 'IOStat %s'%(self.iostat_attr)
+        elif self.smartreport_attr:
+            return 'SmartReport %s'%(self.smartreport_attr)
+
+
+
+        
+class FlagRange(models.Model):
+    WARNING_LEVEL_CHOICES = (('minor','Minor'),('moderate','Moderate'),('severe','Severe'),)
+    flag = models.ForeignKey(Flag,related_name="ranges")
+    level = models.CharField(max_length=10,choices=WARNING_LEVEL_CHOICES)
+    minimum = models.DecimalField(max_digits=16,decimal_places=3,blank=True,null=True)
+    maximum = models.DecimalField(max_digits=16,decimal_places=3,blank=True,null=True)
+    
+class DiskFlag(models.Model):
+    flag = models.ForeignKey(Flag,related_name="disk_flags")
+    flag_range = models.ForeignKey(FlagRange,related_name="disk_flags")
+    disk = models.ForeignKey(Disk,related_name="disk_flags")
+    updated = models.DateTimeField(auto_now_add=True)
+    time = models.DateTimeField(blank=True,null=True)
+    value = models.DecimalField(max_digits=16,decimal_places=3)

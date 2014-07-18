@@ -1,5 +1,5 @@
 from datetime import datetime as dt, timedelta, time
-from maestor.models import Aggregate, IOStat
+from maestor.models import Aggregate, IOStat, Attribute
 from django.db.models.aggregates import Max, Min, Avg, StdDev, Count
 def get_week(datetime):
     date = datetime.date()
@@ -16,6 +16,8 @@ def get_day(datetime):
 def get_next_day(datetime):
     return get_day(datetime) + timedelta(days=1)
 
+
+#@deprecated: Opting for MySQL aggregation
 def aggregate_disk(disk,beginning,unit="week"):
     if unit == "week":
         get_prev = get_week

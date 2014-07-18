@@ -56,7 +56,7 @@ def post_io_report(request):
             if not disks.has_key(device):
 #                 print 'Get device'
                 disks[device]=Disk.objects.get(unix_device__endswith=device,server=server)
-                print device
+#                 print device
             for name, value in values.iteritems():
 #                 print "%s, %s"%(name,value)
                 IOStat.objects.create(disk=disks[device],server=server,created=report['timestamp'],unix_device=device,name=name,value=value)
@@ -105,7 +105,7 @@ def disk_attribute(request):
     disk = request.GET.get('disk')
     attr = request.GET.get('attribute')
     type = request.GET.get('type')
-    print "%s: %s" % (attr,disk)
+#     print "%s: %s" % (attr,disk)
     if type == 'smartctl':
         attrs = [{'timestamp': o['smart_report__created'],'value':o['raw_value']} for o in Attribute.objects.filter(name=attr,smart_report__disk=disk).values('raw_value','smart_report__created').order_by('smart_report__created')]
     elif type == 'iostat':

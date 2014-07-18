@@ -1,8 +1,21 @@
 {% extends "base/base_banner.html" %}
 {% block 'content'%}
+<style>
+.minor{background-color:yellow;}
+.moderate{background-color:orange;}
+.severe{background-color:red;}
+</style>
 <h1>Disk MÆstØr Home</h1>
 <p>Some sort of dashboard goes here?</p>      
+<h2>Warnings</h2>
+{{warnings}}
+<table>
+<tr><th>Level</th><th>Disk</th><th>Attribute</th><th>Value</th></tr>
+{% for w in warnings%}
+<tr class="{{w.criteria.level}}"><td>{{w.criteria.level}}</td><td>{{w.disk.disk}}</td><td>{{w.disk.name}}</td><td>{{w.disk.value}}</td></tr>
+{% endfor %}
+</table>
 {% endblock %}
      
-	{% block 'scripts' %}
-   	{% endblock %}
+{% block 'scripts' %}
+{% endblock %}
