@@ -12,7 +12,7 @@
 <tr><th>RPM</th><td>{{disk.rpm}} RPM</td></tr>
 <tr><th>Firmware</th><td><a href="{% url 'model_disks' %}?model={{disk.model}}&firmware={{disk.firmware}}">{{disk.firmware}}</td></tr>
 </table>
-<h2>Charts</h2>
+<h2 id="/charts">Charts</h2>
 <div ng-controller="ChartsCtrl" ng-init="init('{{disk.id}}')">
 <select ng-model="attribute" ng-options="a.name group by a.type for a in attributes"></select><button ng-click="chart()" class="btn">Chart</button>
 <!--<div id="chart" style="height: 500px; min-width: 500px; display:none"></div>-->
@@ -36,5 +36,6 @@
 <script src="http://code.highcharts.com/stock/highstock.js"></script>
 <script src="http://code.highcharts.com/stock/highcharts-more.js"></script>
 <script src="{% static "scripts/disk_details.js" %}"></script>
+<script src="{% static "scripts/utils.js" %}"></script>
 
 {% endblock %}

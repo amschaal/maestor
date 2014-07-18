@@ -2,7 +2,7 @@ from django.db import models
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete, pre_save
 
-import re
+import re, datetime
 
 class Server(models.Model):
     name = models.CharField(max_length=50)
@@ -77,7 +77,7 @@ def IOStat_post_save(sender, instance, **kwargs):
     from maestor.flags import generate_disk_flag
     try:
         flag = Flag.objects.get(iostat_attr=instance.name)
-        generate_disk_flag(instance.disk,flag,instance.value,instance.created)
+        generate_disk_flag(instance.disk,flag,instance.value,datetime.datetime.now())
     except:
         pass
 
@@ -106,6 +106,14 @@ class Attribute(models.Model):
     thresh = models.IntegerField()
     failed = models.DateTimeField(null=True,blank=True)
     raw_value = models.IntegerField()
+@receiver(post_save, sender=Attribute)
+def Attribute_post_save(sender, instance, **kwargs):
+    from maestor.flags import generate_disk_flag
+    try:
+        flag = Flag.objects.get(smartreport_attr=instance.name)
+        generate_disk_flag(instance.smart_report.disk,flag,instance.value,datetime.datetime.now())
+    except:
+        pass
 #     def parse_raw_value(self):
 #         try:
 #             return float(re.search(r'(\d+\.?\d*)',self.raw_value).group(1))
@@ -149,6 +157,10 @@ class Flag(models.Model):
     iostat_attr = models.CharField(max_length=30,blank=True,null=True)
     smartreport_attr = models.CharField(max_length=30,blank=True,null=True)
     bad_value = models.CharField(max_length=10,choices=BAD_VALUE_CHOICES)
+    def attr_name(self):
+        return self.iostat_attr if self.iostat_attr else self.smartreport_attr
+    def attr_type(self):
+        return 'iostat' if self.iostat_attr else 'smartctl'
     
     def __unicode__(self):
         if self.iostat_attr:

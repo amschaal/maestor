@@ -36,11 +36,20 @@ def generate_disk_flag(disk,flag,value,time):
     for level in FlagRange.WARNING_LEVEL_CHOICES:
         try:
             range = flag.ranges.get(level=level[0])
-            if value >= range.maximum and value <= range.minimum:
-                range_match = range
+            if range.minimum and range.maximum:
+                if value >= range.minimum and value <= range.maximum:
+                    print 1
+                    range_match = range
+            else:
+                if range.minimum and value >= range.minimum:
+                        print 2
+                        range_match = range
+                elif range.maximum and value <= range.maximum:
+                    print 3
+                    range_match = range
         except:
             pass
-    if range_match:
+    if range_match is not None:
         try:
             obj = DiskFlag.objects.get(disk=disk,flag=flag)
             obj.flag_range = range_match

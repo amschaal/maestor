@@ -75,8 +75,7 @@ def generate_warnings(flags):
 
 
 def home(request):
-    generate_warnings(Flag.objects.all())
-    context={}
+    context={'flags':DiskFlag.objects.all()}
     return render(request, 'maestor/home.html', context)
     warnings = []
     for criteria in WarningCriteria.objects.all():
@@ -109,19 +108,6 @@ def home(request):
                 except:
 #                     print 'OOpsss!!!'
                     pass
-        
-        
-#         if criteria.iostat_attr:
-#             query['name']=criteria.iostat_attr
-#             results = IOStat.objects.filter(**query).values_list('created','name','value')
-#             warnings += [[criteria] + list(result) for result in results]
-# #             print results
-#         if criteria.smartreport_attr:
-#             query['name']=criteria.smartreport_attr
-#             results = Attribute.objects.filter(**query).values_list('smart_report__created','name','value')#extra(select={'created':'smart_attribute__created'}).
-#             warnings += [[criteria] + list(result) for result in results]
-# #             print results
-#     print warnings
     context = {'warnings':warnings}
     return render(request, 'maestor/home.html', context)
 

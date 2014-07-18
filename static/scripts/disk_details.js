@@ -1,5 +1,5 @@
-function ChartsCtrl($scope,$http){
-	$scope.init = function(disk_id){
+function ChartsCtrl($scope,$http,$location){
+	$scope.init = function(disk_id,charts){
 		$scope.disk_id = disk_id;
 		$scope.attrs = [];
 		$http({method:'GET',params:{disk:disk_id},url:'/api/attributes/list/'}).then(function(result) {
@@ -7,8 +7,14 @@ function ChartsCtrl($scope,$http){
     		//console.log(result.data);
 		});
 		//You can initialize a page with certain charts
-		$scope.chart({'type':'smartctl','name':'Power_On_Hours'});
-//		$scope.chart({'type':'smartctl','name':'Current_Pending_Sector'});
+		var chart = getParameterByName('chart')
+		if (chart){
+			$scope.chart({'type':chart.split('__')[0],'name':chart.split('__')[1]});
+		}
+			
+//		$scope.chart({'type':'smartctl','name':'Power_On_Hours'});
+
+		//		$scope.chart({'type':'smartctl','name':'Current_Pending_Sector'});
 //		$scope.chart({'type':'smartctl','name':'Offline_Uncorrectable'});
 	}
 	$scope.remove = function(attribute){

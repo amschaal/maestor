@@ -7,12 +7,11 @@
 </style>
 <h1>Disk MÆstØr Home</h1>
 <p>Some sort of dashboard goes here?</p>      
-<h2>Warnings</h2>
-{{warnings}}
+<h2>Flags</h2>
 <table>
 <tr><th>Level</th><th>Disk</th><th>Attribute</th><th>Value</th></tr>
-{% for w in warnings%}
-<tr class="{{w.criteria.level}}"><td>{{w.criteria.level}}</td><td>{{w.disk.disk}}</td><td>{{w.disk.name}}</td><td>{{w.disk.value}}</td></tr>
+{% for f in flags%}
+<tr class="{{f.flag_range.level}}"><td>{{f.flag_range.level}}</td><td><a href="{% url 'disk_details' disk=f.disk.id %}?chart={{f.flag.attr_type|urlencode}}__{{f.flag.attr_name|urlencode}}#/charts">{{f.disk}}</a></td><td>{{f.flag.attr_name}}</td><td>{{f.value}}</td></tr>
 {% endfor %}
 </table>
 {% endblock %}
