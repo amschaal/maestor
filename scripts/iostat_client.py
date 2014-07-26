@@ -9,7 +9,7 @@ import datetime
 URL = 'http://bowie.genomecenter.ucdavis.edu:8000/api/io_report/'
 SERVER = 'bowie.genomecenter.ucdavis.edu'
 IOSTAT_INTERVAL = 60 #Run iostat every n seconds
-POST_INTERVAL = 5 #Post every n times iostat runs
+POST_INTERVAL = 1 #Post every n times iostat runs
 # SERVER = 'athena.genomecenter.ucdavis.edu'
 
 def main():
@@ -30,9 +30,13 @@ def run_iostat():
                     headers = parts[1:]
                     report={'timestamp':str(datetime.datetime.now()),'disks':disks}
                     reports.append(report)
-                    if len(reports) == POST_INTERVAL:
-                        send_reports(reports)
-                        reports = []
+                    if len(reports) >= POST_INTERVAL:
+                        try:
+                            send_reports(reports)
+                            reports = []
+                        except:
+                            print 'Error sending iostat info to "%s"' % URL
+                            pass
                     disks={}
                 elif parts[0][0:2] == 'sd':
                     disks[parts[0]] = dict(zip(headers,[float(x) for x in parts[1:]]))

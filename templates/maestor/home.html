@@ -5,16 +5,36 @@
 .moderate{background-color:orange;}
 .severe{background-color:red;}
 </style>
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.1/css/jquery.dataTables.css">
+
 <h1>Disk MÆstØr Home</h1>
 <p>Some sort of dashboard goes here?</p>      
 <h2>Flags</h2>
-<table>
-<tr><th>Level</th><th>Disk</th><th>Attribute</th><th>Value</th></tr>
+<table id="flags">
+<thead>
+<tr><th>Level</th><th>Disk</th><th>Attribute</th><th>Worst Time</th><th>Worst Value</th><th>Time</th><th>Value</th></tr>
+</thead>
+<tbody>
 {% for f in flags%}
-<tr class="{{f.flag_range.level}}"><td>{{f.flag_range.level}}</td><td><a href="{% url 'disk_details' disk=f.disk.id %}?chart={{f.flag.attr_type|urlencode}}__{{f.flag.attr_name|urlencode}}#/charts">{{f.disk}}</a></td><td>{{f.flag.attr_name}}</td><td>{{f.value}}</td></tr>
+<tr>
+<td class="{{f.flag_range.level}}">{{f.flag_range.level}}</td>
+<td><a href="{% url 'disk_details' disk=f.disk.id %}?chart={{f.flag.attr_type|urlencode}}__{{f.flag.attr_name|urlencode}}#/charts">{{f.disk}}</a></td>
+<td>{{f.flag.attr_name}}</td>
+<td>{{f.worst_time}}</td>
+<td>{{f.worst_value}}</td>
+<td>{{f.time}}</td>
+<td>{{f.value}}</td>
+</tr>
 {% endfor %}
+</tbody>
 </table>
 {% endblock %}
      
 {% block 'scripts' %}
+<script src="//cdn.datatables.net/1.10.1/js/jquery.dataTables.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#flags').dataTable();
+} );
+</script>
 {% endblock %}

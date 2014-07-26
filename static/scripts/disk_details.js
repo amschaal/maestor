@@ -40,7 +40,15 @@ function ChartsCtrl($scope,$http,$location){
     		console.log(data);
     		$('#'+attribute.clean_name+'_chart').css('display','block').highcharts('Chart', {
     			chart: {
-                    zoomType: 'x'
+                    zoomType: 'x',
+        			resetZoomButton: {
+                        position: {
+                             align: 'right', // by default
+                             verticalAlign: 'top', // by default
+                            x: 0,
+                            y: -35
+                        }
+                    }
                 },
     			title : {
     				text : attribute.name

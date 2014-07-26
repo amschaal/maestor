@@ -1,6 +1,6 @@
 from django.db.models import Max, Min
 from models import Flag, DiskFlag, Disk, FlagRange, IOStat
-                
+from django.core.exceptions import ObjectDoesNotExist                
 def generate_disk_flag(disk,flag,value,time):
     range_match = None
     for level in FlagRange.WARNING_LEVEL_CHOICES:
@@ -20,11 +20,17 @@ def generate_disk_flag(disk,flag,value,time):
         try:
             obj = DiskFlag.objects.get(disk=disk,flag=flag)
             obj.flag_range = range_match
+            if (obj.bad_value == 'low' and value <= obj.worst_value) or (obj.bad_value == 'high' and value >= obj.worst_value):
+                obj.worst_value = value
+                obj.worst_time = time
+                obj.flag_range = range_match
             obj.value = value
             obj.time = time
             obj.save()
-        except:
-            obj = DiskFlag.objects.create(disk=disk,flag=flag,flag_range=range_match,value=value,time=time)
+        except ObjectDoesNotExist, e:
+            obj = DiskFlag.objects.create(disk=disk,flag=flag,flag_range=range_match,value=value,time=time,worst_value=value,worst_time=time)
+        except Exception, e:
+            print e
 
 #NOT USED: Generate DiskFlags based on the all time min/max from IOStat (need to add more logic for smartctl)
 #Leaving here for code reference

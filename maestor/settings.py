@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'maestor',
     'crispy_forms',
     'rest_framework',
+    'django_extensions',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -110,7 +111,7 @@ STATICFILES_DIRS = (
 )
 
 LOGIN_REDIRECT_URL = '/'
-
+LOGIN_URL = '/'
 if USE_CAS:
     CAS_SERVER_URL = "https://cas.ucdavis.edu/cas/"
     CAS_VERSION = '2'

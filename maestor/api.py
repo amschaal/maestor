@@ -189,10 +189,13 @@ def disk_values(request):
         unit = 'default'
     elif range < 14 * 24 * 3600 * 1000:
         unit = 'hour'
+        end = int(end) + 3600*1000000
     elif range < 3 * 31 * 24 * 3600 * 1000:
         unit = 'day'
+        end = int(end) + 3600*24*1000000
     else:
         unit = 'week'
+        end = int(end) + 3600*24*7*1000000
 
     start_dt = datetime.fromtimestamp(int(start)/1000.0)
     end_dt = datetime.fromtimestamp(int(end)/1000.0)
@@ -200,7 +203,7 @@ def disk_values(request):
     if unit == 'default':   
         if type == 'smartctl':
             fields = ['datetime','value']
-            values = Attribute.objects.filter(name=attr,smart_report__disk=disk,smart_report__created__gte=start_dt,smart_report__created__lte=end_dt).values_list('smart_report__created','raw_value').order_by('smart_report__created')
+            values = Attribute.objects.filter(name=attr,smart_report__disk=disk,smart_report__created__gte=start_dt,smart_report__created__lte=end_dt).values_list('smart_report__created','value').order_by('smart_report__created')
         elif type == 'iostat':
             fields = ['datetime','value']
             values = IOStat.objects.filter(name=attr,disk=disk,created__gte=start_dt,created__lte=end_dt).values_list('created','value').order_by('created')

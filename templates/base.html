@@ -25,6 +25,7 @@
 </style>
     <!-- Optional theme -->
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap-theme.min.css">
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.7/angular.min.js"></script>
 <script src="/static/angular/bootstrap-ui.js"></script>
 <script>
@@ -61,12 +62,12 @@ main.config(function($interpolateProvider) {
             <li><a href="{% url 'home' %}">Home</a></li>
             <li><a href="{% url 'servers' %}">Servers</a></li>
             <li><a href="{% url 'admin:index' %}">Admin</a></li>
-            <li class="dropdown">
+            <!-- <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
               <ul class="dropdown-menu">
                 <li><a href="#">Action</a></li>
               </ul>
-            </li>
+            </li> -->
             {% endif %}
           </ul>
           
